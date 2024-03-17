@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
 
-import re
+import logging
 from typing import List
+from filtered_datum import filter_datum
 
 
-def filter_datum(fields: List[str], redaction: str, message: str, separator: str) -> str:
-    """
-    Obfuscates log message fields based on specified fields
-    and redaction character.
+class RedactingFormatter(logging.Formatter):
+    """ Redacting Formatter class """
 
-    Arguments:
-    fields: List of strings representing fields to obfuscate.
-    redaction: String representing the character used for obfuscation.
-    message: String representing the log line.
-    separator: String representing the character
-    separating fields in the log line.
+    REDACTION = "***"
 
-    Returns:
-    String: Log message with specified fields obfuscated.
-    """
-    return re.sub(fr'\b(?:{"|".join(fields)})\b', redaction, message, flags=re.IGNORECASE)
+    def __init__(self, fields: List[str]):
+        format_str = f"[HOLBERTON] %(name)s %(levelname)s %(asctime)-15s: %(message)s"
+        super().__init__(format_str)
+        self.fields = fields
+
+    def format(self, record: logging.LogRecord) -> str:
+        record.msg = filter_datum(self.fields, self.REDACTION, record.msg, self.SEPARATOR)
+        return super().format(record)
