@@ -6,9 +6,9 @@ This module provides the DB class for interacting with the database.
 """
 
 from sqlalchemy import create_engine
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm.exc import NoResultFound
 
 from user import User
 
@@ -55,6 +55,28 @@ class DB:
             self._session.rollback()
             raise ValueError("User with this email already exists in the database.")
         return user
+
+    def find_user_by(self, **kwargs) -> User:
+        """
+        Find a user by the provided filter criteria.
+
+        Args:
+        - kwargs: Arbitrary keyword arguments representing filter criteria.
+
+        Returns:
+        - user: User object found by the filter criteria.
+
+        Raises:
+        - NoResultFound: If no user is found based on the provided filter criteria.
+        - InvalidRequestError: If wrong query arguments are passed.
+        """
+        try:
+            user = self._session.query(User).filter_by(**kwargs).first()
+            if not user:
+                raise NoResultFound("No user found for the given criteria.")
+            return user
+        except InvalidRequestError as e:
+            raise InvalidRequestError("Invalid query arguments.") from e
 
 
 if __name__ == "__main__":
