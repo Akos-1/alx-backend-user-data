@@ -8,6 +8,7 @@ with the database.
 
 import bcrypt
 
+
 class DB:
     """DB class
     """
