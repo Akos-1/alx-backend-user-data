@@ -6,7 +6,7 @@ This module provides the DB class for interacting with the database.
 """
 
 from sqlalchemy import create_engine
-from sqlalchemy.exc import InvalidRequestError
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.orm.exc import NoResultFound
@@ -68,7 +68,8 @@ class DB:
         - user: User object found by the filter criteria.
 
         Raises:
-        - NoResultFound: If no user is found based on the provided filter criteria.
+        - NoResultFound: If no user is found based on the provided
+        filter criteria.
         - InvalidRequestError: If wrong query arguments are passed.
         """
         try:
@@ -78,6 +79,31 @@ class DB:
             return user
         except InvalidRequestError as e:
             raise InvalidRequestError("Invalid query arguments.") from e
+
+    def update_user(self, user_id: int, **kwargs) -> None:
+        """
+        Update a user in the database.
+
+        Args:
+        - user_id: The ID of the user to update.
+        - kwargs: Arbitrary keyword arguments representing attributes to update.
+
+        Raises:
+        - ValueError: If an argument that does not correspond
+        to a user attribute is passed.
+        """
+        try:
+            user = self.find_user_by(id=user_id)
+        except NoResultFound:
+            raise ValueError(f"User not found with ID: {user_id}")
+
+        for key, value in kwargs.items():
+            if not hasattr(User, key):
+                raise ValueError(f"Invalid attribute: {key}")
+
+            setattr(user, key, value)
+
+        self._session.commit()
 
 
 if __name__ == "__main__":
