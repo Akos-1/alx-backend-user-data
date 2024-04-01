@@ -7,6 +7,7 @@ This module provides the DB class for interacting with the database.
 
 from sqlalchemy import create_engine
 from sqlalchemy.exc import InvalidRequestError
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.orm.exc import NoResultFound
 
